@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init-dbs.sh:/docker-entrypoint-initdb.d/init-dbs.sh
+
+volumes:
+  postgres_data:
