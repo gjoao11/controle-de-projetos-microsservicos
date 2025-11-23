@@ -1,30 +1,33 @@
 package com.example.authservice.controller;
 
-import com.example.authservice.service.UserService;
-import lombok.RequiredArgsConstructor;
+import com.example.authservice.dto.LoginRequestDTO;
+import com.example.authservice.dto.LoginResponseDTO;
+import com.example.authservice.entity.User;
+import com.example.authservice.security.TokenService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestParam String email,
-                                      @RequestParam String password) {
-        return ResponseEntity.ok(userService.register(email, password));
-    }
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private TokenService tokenService;
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String email,
-                                   @RequestParam String password) {
-        boolean ok = userService.login(email, password);
-        if (ok) {
-            return ResponseEntity.ok("Login realizado com sucesso!");
-        }
-        return ResponseEntity.status(401).body("Credenciais inválidas.");
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO body) {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(body.email(), body.password());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 }

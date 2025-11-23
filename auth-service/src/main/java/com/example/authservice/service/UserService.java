@@ -1,30 +1,29 @@
 package com.example.authservice.service;
 
+import com.example.authservice.dto.CreateUserDTO;
 import com.example.authservice.entity.User;
 import com.example.authservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+import java.util.List;
 
-    public User register(String email, String password) {
-        User user = User.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .build();
-        return userRepository.save(user);
+@Service
+public class UserService {
+    @Autowired
+    UserRepository userRepository;
+
+    public User create(CreateUserDTO dto) {
+        String encryptedPassword = new BCryptPasswordEncoder().encode(dto.password());
+        return this.userRepository.save(new User(dto.name(), dto.email(), encryptedPassword, dto.role()));
     }
 
-    public boolean login(String email, String password) {
-        return userRepository
-                .findByEmail(email)
-                .filter(u -> passwordEncoder.matches(password,
-                        u.getPassword()))
-                .isPresent();
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElse(null);
     }
 }
