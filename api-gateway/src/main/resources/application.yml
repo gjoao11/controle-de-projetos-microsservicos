@@ -18,6 +18,10 @@ spring:
           uri: lb://project-service
           predicates:
             - Path=/api/projetos/**
+        - id: group-service
+          uri: lb://group-service
+          predicates:
+            - Path=/groups/**
 
 eureka:
   client:
