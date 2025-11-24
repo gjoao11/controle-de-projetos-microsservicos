@@ -23,6 +23,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("controle-de-projetos-auth-service")
                     .withSubject(user.getEmail())
+                    .withClaim("role", user.getRole().name())
                     .withExpiresAt(getExpirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException e) {
